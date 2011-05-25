@@ -9,14 +9,16 @@
     numberOfItemsDown:                 0,           // REQUIRED IF FIXED PAGINAITON IS TRUE. Sets the maximum number of items that can fit vertically on a page.
     fixedPagination:               false,           // OPTIONAL Set to true if you want to use fixed pagination. Use this if you know that all of the items are of the same dimentions.
     startingPageNumber:                 1,          // OPTIONAL Set the page of items that you would like to display by default when the page loads.
-    controlModifier:        "visibility",           // OPTIONAL Set the way in which the next and prev buttons/links will be hidden (display or visibility)
+    controlModifier:          "visibility",         // OPTIONAL Set the way in which the next and prev buttons/links will be hidden (display or visibility)
     hideOneOfOnePageCount:          false           // OPTIONAL Set to true if you want to hide the page count if there is only one page.
   }
   
   $.fn.easyPaginate = function(settings){
     $.extend(options, settings || {});
+    initPagination(this);
+  };
   
-    var self = this;
+  initPagination = function(self){
     $.extend(self, {
       controlModifierOn:      (options.controlModifier == 'display') ? "inline" : "visible",
       controlModifierOff:     (options.controlModifier == 'display') ? "none" : "hidden",
@@ -120,10 +122,6 @@
       }
     });
     
-    initPagination(self);
-  };
-  
-  initPagination = function (self){
     self.setPageAreaOrMaxItems();
     self.css('display', 'block');
     options.fixedPagination ? self.fixedPaginate() : self.dynamicPaginate();
