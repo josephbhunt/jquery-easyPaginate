@@ -1,0 +1,63 @@
+<html>
+<head>
+  <script type="text/javascript" src="jquery-1.5.2.min.js"></script>
+  <script type="text/javascript" src="../easyPaginate.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $("#itemList").easyPaginate(
+        {
+          nextButtonId:           "nextButton",
+          prevButtonId:           "prevButton",
+          itemClassName:          "item",
+          fixedPagination:        true,
+          numberOfItemsAccross:   1,
+          numberOfItemsDown:      3,
+          pageNumberId:           "pageNumber"
+        }
+      );
+    })
+  </script>
+  
+  <style type="text/css">
+    #itemList{
+      width:200px;
+    }
+    .item{
+      background-color:#DDDDDD;
+      border:1px solid black;
+      padding:15px;
+    }
+  </style>
+</head>
+<body>
+  <div id="itemList">
+    <div class="item">
+      Item 1
+    </div>
+    <div class="item">
+      Item 2
+    </div>
+    <div class="item">
+      Item 3
+    </div>
+    <div class="item">
+      Item 4
+    </div>
+    <div class="item">
+      Item 5
+    </div>
+    <div class="item">
+      Item 6
+    </div>
+    <div class="item">
+      Item 7
+    </div>
+    <div class="item">
+      Item 8
+    </div>
+  </div>
+  <a id="prevButton" href="#"> BACK </a>
+  <span id="pageNumber"></span>
+  <a id="nextButton" href="#"> NEXT </a>
+</body>
+</html>
