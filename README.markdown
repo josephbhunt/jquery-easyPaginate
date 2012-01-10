@@ -6,8 +6,8 @@ EasyPaginate has the ability to paginate both vertically and horizontally. By de
 
 Why I created it
 ----------------
-I created this plugin so that I could easily paginate a list of HTML elements, without making any assumptions about how many items should fit inside the pagination area, or how they should be styled.
+I created this plugin so that I could easily paginate a list of HTML elements, without making any assumptions about what kind of element they are, or how they should be styled.
 
 Why I like it
 -------------
-I like this solution because it abstracts the functionality of the pagination from the styles. The user is free to add what ever styles he/she likes. I am also proud of this plugin because it is very versatile, and it can paginate the items inside another HTML element in a grid-like fashion (See the fixedGridExample under /test).
+I like this solution because it abstracts the functionality from the styles. I am also proud of this plugin because it is very versatile, and it can paginate the items inside another HTML element in a grid-like fashion (See the fixedGridExample under /test).
