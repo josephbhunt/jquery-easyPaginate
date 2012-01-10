@@ -1,0 +1,110 @@
+<html>
+<head>
+  <script type="text/javascript" src="jquery-1.5.2.min.js"></script>
+  <script type="text/javascript" src="../easyPaginate.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $("#itemList").easyPaginate(
+        {
+          nextButtonId:   "nextButton",
+          prevButtonId:   "prevButton",
+          itemClassName:  "item",
+          pageNumberId:   "pageNumber",
+          numberOfItemsAccross: 3,
+          numberOfItemsDown: 2,
+          fixedPagination: true
+        }
+      );
+    })
+  </script>
+  
+  <style type="text/css">
+    #itemList{
+      width:400px;
+    }
+    .item{
+      background-color:#DDDDDD;
+      border:1px solid black;
+      padding:15px;
+      margin: 0px 5px 5px 0px;
+      width: 80px;
+      height: 80px;
+      float: left;
+    }
+  </style>
+</head>
+<body>
+  <div id="itemList">
+    <div class="item">
+      Item 1
+    </div>
+    <div class="item">
+      Item 2
+    </div>
+    <div class="item">
+      Item 3
+    </div>
+    <div class="item">
+      Item 4
+    </div>
+    <div class="item">
+      Item 5
+    </div>
+    <div class="item">
+      Item 6
+    </div>
+    <div class="item">
+      Item 7
+    </div>
+    <div class="item">
+      Item 8
+    </div>
+    <div class="item">
+      Item 9
+    </div>
+    <div class="item">
+      Item 10
+    </div>
+    <div class="item">
+      Item 11
+    </div>
+    <div class="item">
+      Item 12
+    </div>
+    <div class="item">
+      Item 13
+    </div>
+    <div class="item">
+      Item 14
+    </div>
+    <div class="item">
+      Item 15
+    </div>
+    <div class="item">
+      Item 16
+    </div>
+    <div class="item">
+      Item 17
+    </div>
+    <div class="item">
+      Item 18
+    </div>
+    <div class="item">
+      Item 19
+    </div>
+    <div class="item">
+      Item 20
+    </div>
+    <div class="item">
+      Item 21
+    </div>
+    <div class="item">
+      Item 23
+    </div>
+  </div>
+  <div style="clear:both;">
+  <a id="prevButton" href="#"> BACK </a>
+  <span id="pageNumber"></span>
+  <a id="nextButton" href="#"> NEXT </a>
+</body>
+</html>
