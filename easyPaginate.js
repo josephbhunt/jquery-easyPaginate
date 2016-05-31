@@ -1,170 +1,211 @@
-(function($){
+(function($, window){
 
-  var options = {
-    nextButtonId:                     "",           // REQUIRED The id of the button/link that advances to the next page of items.
-    prevButtonId:                     "",           // REQUIRED The id of the button/link that reverts to the previous page of items.
-    itemClassName:                    "",           // REQUIRED The class name assignened to each item in the list.
-    pageNumberId:                     "",           // REQUIRED IF YOU WANT TO SHOW PAGE NUMBERS.
-    numberOfItemsAccross:              0,           // REQUIRED IF FIXED PAGINATION IS TRUE. Sets the maximum number of items that can fit horizontally on a page.
-    numberOfItemsDown:                 0,           // REQUIRED IF FIXED PAGINAITON IS TRUE. Sets the maximum number of items that can fit vertically on a page.
-    fixedPagination:               false,           // OPTIONAL Set to true if you want to use fixed pagination. Use this if you know that all of the items are of the same dimentions.
-    startingPageNumber:                 1,          // OPTIONAL Set the page of items that you would like to display by default when the page loads.
-    controlModifier:          "visibility",         // OPTIONAL Set the way in which the next and prev buttons/links will be hidden (display or visibility)
-    hideOneOfOnePageCount:          false           // OPTIONAL Set to true if you want to hide the page count if there is only one page.
-  }
-  
-  $.fn.easyPaginate = function(settings){
-    $.extend(options, settings || {});
-    initPagination(this);
-  };
-  
-  initPagination = function(self){
-    $.extend(self, {
-      controlModifierOn:      (options.controlModifier == 'display') ? "inline" : "visible",
-      controlModifierOff:     (options.controlModifier == 'display') ? "none" : "hidden",
-      nextButton:             $("#"+options.nextButtonId),
-      prevButton:             $("#"+options.prevButtonId),
-      pageNumber:             (options.pageNumberId != "") ? $("#"+options.pageNumberId) : "",
-      items:                  $('#'+self.attr("id")+' .'+options.itemClassName),
-      currentPageNumber:      options.startingPageNumber,
-      maxPageArea:            0,
-      maxItemsPerPage:        0,
-      totalPages:             1,
-      
-      setPageAreaOrMaxItems:  function() {
-        if ( (options.numberOfItemsAccross > 0) && (options.numberOfItemsDown > 0) ){
-          self.maxItemsPerPage = options.numberOfItemsAccross * options.numberOfItemsDown;
+  var EasyPaginate;
+
+  EasyPaginate = (function(){
+    EasyPaginate.prototype.defaults = {
+      pageClassNameBase:                 "easyPaginatePage_",
+      nextButtonId:                     "next-button",           // REQUIRED The id of the button/link that advances to the next page of items.
+      prevButtonId:                     "prev-button",           // REQUIRED The id of the button/link that reverts to the previous page of items.
+      pageNumberClass:                   "page-number",
+      itemClassName:                    "",           // REQUIRED The class name assignened to each item in the list.
+      pageNumberId:                     "page-number",           // REQUIRED IF YOU WANT TO SHOW PAGE NUMBERS.
+      numberOfItemsAccross:              1,           // REQUIRED IF FIXED PAGINATION IS TRUE. Sets the maximum number of items that can fit horizontally on a page.
+      numberOfItemsDown:                 1,           // REQUIRED IF FIXED PAGINAITON IS TRUE. Sets the maximum number of items that can fit vertically on a page.
+      fixedPagination:                true,           // OPTIONAL Set to true if you want to use fixed pagination. Use this if you know that all of the items are of the same dimentions.
+      startingPageNumber:                 1,          // OPTIONAL Set the page of items that you would like to display by default when the page loads.
+      controlModifier:          "visibility",         // OPTIONAL Set the way in which the next and prev buttons/links will be hidden (display or visibility)
+      afterChangePageCallBack:         function(){},  // Run a call back after a new page is shown. Called after initialization.
+    };
+
+    function EasyPaginate(element, options) {
+      this.$element = $(element);
+      this.options = $.extend({}, this.defaults, options);
+      this.controlModifierOn =      (this.options.controlModifier == 'display') ? "inline" : "visible"
+      this.controlModifierOff =     (this.options.controlModifier == 'display') ? "none" : "hidden"
+      this.nextButton =             $("#"+this.options.nextButtonId)
+      this.prevButton =             $("#"+this.options.prevButtonId)
+      this.pageNumbers =            $("." + this.options.pageNumberClass)
+      this.pageNumber =             (this.options.pageNumberId != "") ? $("#"+this.options.pageNumberId) : ""
+      this.items =                  this.$element.find('.' + this.options.itemClassName)
+      this.currentPageNumber =      this.options.startingPageNumber
+      this.maxPageArea =            0
+      this.maxItemsPerPage =        0
+      this.totalPages =             0
+      this.paginate();
+    };
+
+    EasyPaginate.prototype.paginate = function(){
+      this.setPageAreaOrMaxItems();
+      this.$element.css('display', 'block');
+      this.options.fixedPagination ? this.fixedPaginate() : this.dynamicPaginate();
+
+      this.nextButton.unbind("click")
+      this.prevButton.unbind("click")
+
+      this.nextButton.click((function(_this){
+        return function() {
+          if (_this.currentPageNumber < _this.totalPages) {
+            _this.changePage(++_this.currentPageNumber);
+          }
+          return false;
+        };
+      })(this));
+
+      this.prevButton.click((function(_this){
+        return function() {
+          if (_this.currentPageNumber > 1) {
+            _this.changePage(--_this.currentPageNumber);
+          }
+          return false;
         }
-        else{
-          self.maxPageArea = self.css("height").match(/\d*/) * self.css("width").match(/\d*/); //Must use css property to work in IE.
+      })(this));
+
+      this.pageNumbers.click((function(_this){
+        return function(event) {
+          console.log($(event.target))
+          pageNumber = $(event.target).find("a").text()
+          _this.changePage(pageNumber);
+          return false;
         }
-        return this;
-      },
-      
-      fixedPaginate:          function() {
-        var pageNumber = 1;
-        var totalItemsOnCurrentPage = 0;
-        var className;
+      })(this));
 
-        self.items.each( function() {
-          className = $(this).attr("class");
-          totalItemsOnCurrentPage++;
+      this.changePage(this.currentPageNumber)
 
-          if (totalItemsOnCurrentPage <= self.maxItemsPerPage) {
-            className = className+" easyPaginatePage_"+pageNumber;
-          }
-          else{
-            className = className+" easyPaginatePage_"+(++pageNumber);
-            totalItemsOnCurrentPage = 1;
-            self.totalPages++;
-          }
-          $(this).attr("class", className);
-        });
-        return this;
-      },
-      
-      dynamicPaginate:        function() {
-        var pageNumber = 1;
-        var newContentArea = 0;
-        var className;
+      return this;
+    };
 
-        self.items.each( function() {
-          newContentArea += $(this).fullArea();
-          className = $(this).attr("class");
-          if (newContentArea <= self.maxPageArea) {
-            className = className+" easyPaginatePage_"+pageNumber;
-          }
-          else{
-            className = className+" easyPaginatePage_"+(++pageNumber);
-            newContentArea = $(this).fullArea();
-            self.totalPages++;
-          }
-          $(this).attr("class", className);
-        });
-        return this;
-      },
-      
-      changePage:             function(pageNumber){
-        var newContentGroup = $('#'+self.attr("id")+' .easyPaginatePage_'+pageNumber);
-        if (newContentGroup != null){
-          self.displayNoItems();
-          newContentGroup.each(function(index) {
-            $(this).css('display', 'block');
-          });
-          self.currentPageNumber = pageNumber;
-          self.updateUI();
-        }
-        return this;
-      },
-      
-      displayNoItems:         function (){
-        self.items.each( function() {
-          $(this).css('display', 'none');
-        });
-        return this;
-      },
-      
-      updateUI:                 function(){
-        self.displayBackOrMoreButtons();
-        if (options.pageNumberId != "") self.updatePageNumber(options.hideOneOfOnePageCount);
-        return this;
-      },
-
-      displayBackOrMoreButtons: function (){
-        (self.currentPageNumber == 1) ? self.prevButton.css(options.controlModifier, self.controlModifierOff) : self.prevButton.css(options.controlModifier, self.controlModifierOn);
-        (self.currentPageNumber == self.totalPages) ? self.nextButton.css(options.controlModifier, self.controlModifierOff) : self.nextButton.css(options.controlModifier, self.controlModifierOn);
-        return this;
-      },
-
-      updatePageNumber:         function () {
-        ((self.totalPages <= 1) && options.hideOneOfOnePageCount) ? self.pageNumber.css('display', 'none') : self.pageNumber.text(""+self.currentPageNumber+" of "+self.totalPages);
-        return this;
+    EasyPaginate.prototype.setPageAreaOrMaxItems = function() {
+      if ( (this.options.numberOfItemsAccross > 0) && (this.options.numberOfItemsDown > 0) ){
+        this.maxItemsPerPage = this.options.numberOfItemsAccross * this.options.numberOfItemsDown;
       }
-    });
-    
-    self.setPageAreaOrMaxItems();
-    self.css('display', 'block');
-    options.fixedPagination ? self.fixedPaginate() : self.dynamicPaginate();
-    self.changePage(self.currentPageNumber).updateUI();
+      else{
+        this.maxPageArea = this.$element.css("height").match(/\d*/) * this.$element.css("width").match(/\d*/); //Must use css property to work in IE.
+      }
+      return this;
+    };
 
-    self.nextButton.click(function() {
-      if ((self.currentPageNumber < self.totalPages)) self.changePage(++self.currentPageNumber);
-      return false;
+    EasyPaginate.prototype.fixedPaginate = function() {
+      var pageNumber = 1;
+      var totalItemsOnCurrentPage = 1;
+
+      if (this.items.length > 0){
+        this.totalPages = 1;
+      }
+
+      // Clear existing classes
+      $(this.items).removeClass( (function(_this){
+        return function(index, css){
+          regex = new RegExp("(" + _this.options.pageClassNameBase + "\\d*)", "g")
+          return (css.match(regex) || []).join(" ");
+        };
+      })(this));
+
+      this.items.each( (function(_this) {
+        return function(index, item) {
+          item = $(item);
+
+          if (totalItemsOnCurrentPage > _this.maxItemsPerPage) {
+            pageNumber++
+            totalItemsOnCurrentPage = 1;
+            _this.totalPages++;
+          }
+          className = _this.options.pageClassNameBase + pageNumber;
+          if (!item.hasClass(className)){
+            item.addClass(className);
+          }
+          totalItemsOnCurrentPage++;
+        };
+      })(this));
+      return this;
+    };
+
+    EasyPaginate.prototype.dynamicPaginate = function() {
+      var pageNumber = 1;
+      var newContentArea = 0;
+      var className;
+
+      this.items.each( (function(_this) {
+        return function() {
+          newContentArea += _this.$element.fullArea();
+          className = _this.$element.attr("class");
+          if (newContentArea <= this.maxPageArea) {
+            className = className + " " + _this.options.pageClassNameBase + pageNumber;
+          }
+          else{
+            className = className + " " + _this.options.pageClassNameBase + (++pageNumber);
+            newContentArea = $(this).fullArea();
+            this.totalPages++;
+          }
+          _this.$element.attr("class", className);
+        };
+      })(this));
+      return this;
+    };
+
+    EasyPaginate.prototype.changePage = function(pageNumber){
+      var newContentGroup = $('#'+this.$element.attr("id") + ' .' + this.options.pageClassNameBase + pageNumber);
+      if (newContentGroup != null){
+        this.displayNoItems();
+        newContentGroup.each(function(index) {
+          $(this).css('display', 'block');
+        });
+        this.currentPageNumber = pageNumber;
+      }
+      this.options.afterChangePageCallBack(this, this.currentPageNumber, this.totalPages);
+      return this;
+    };
+
+    EasyPaginate.prototype.displayNoItems = function (){
+      this.items.each( (function(_this) {
+        return function(index, item) {
+          item = $(item)
+          item.css('display', 'none');
+        };
+      })(this));
+      return this;
+    };
+
+    return EasyPaginate;
+
+  })();
+
+  $.fn.fullArea = function(){
+    var element = $(this);
+    $.extend(element,{
+      fullHeight: function() {
+         var totalHeight = 0;
+         $.each(["border", "padding", "margin"], function(){
+           totalHeight += element.convertToInt(element.css(this+"-top"));
+           totalHeight += element.convertToInt(element.css(this+"-bottom"));
+         });
+         return (totalHeight += element.height());
+       },
+
+       fullWidth: function() {
+         var totalWidth = 0;
+         $.each(["border", "padding", "margin"], function(){
+           totalWidth += element.convertToInt(element.css(this+"-right"));
+           totalWidth += element.convertToInt(element.css(this+"-left"));
+         });
+         return (totalWidth += element.width());
+       },
+
+       convertToInt:  function(value) {
+         value = value.replace("px", "");
+         return value == "" ? 0 : parseInt(value);
+       }
     });
 
-    self.prevButton.click(function() {
-      if ((self.currentPageNumber > 1)) self.changePage(--self.currentPageNumber);
-      return false;
-    });
+    return element.fullHeight() * element.fullWidth();
   };
-  
-$.fn.fullArea = function(){
-  var element = $(this);
-  $.extend(element,{
-    fullHeight: function() {
-       var totalHeight = 0;
-       $.each(["border", "padding", "margin"], function(){
-         totalHeight += element.convertToInt(element.css(this+"-top"));
-         totalHeight += element.convertToInt(element.css(this+"-bottom"));
-       });
-       return (totalHeight += element.height());
-     },
 
-     fullWidth: function() {
-       var totalWidth = 0;
-       $.each(["border", "padding", "margin"], function(){
-         totalWidth += element.convertToInt(element.css(this+"-right"));
-         totalWidth += element.convertToInt(element.css(this+"-left"));
-       });
-       return (totalWidth += element.width());
-     },
-
-     convertToInt:  function(value) {
-       value = value.replace("px", "");
-       return value == "" ? 0 : parseInt(value);
-     }
+  return $.fn.extend({
+    easyPaginate: function(options) {
+      return this.each(function() {
+        $this = $(this)
+        $this.data("EasyPaginate", new EasyPaginate(this, options));
+      });
+    }
   });
-  
-  return element.fullHeight() * element.fullWidth();
-};
-})(jQuery);
+})(window.jQuery, window);
