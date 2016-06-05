@@ -61,9 +61,9 @@
         }
       })(this));
 
+      // TODO: Make this more dynamic so that it does not require the use of an <a> tage.
       this.pageNumbers.click((function(_this){
         return function(event) {
-          console.log($(event.target))
           pageNumber = $(event.target).find("a").text()
           _this.changePage(pageNumber);
           return false;
